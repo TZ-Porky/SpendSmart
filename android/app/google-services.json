@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "130552286901",
+    "project_id": "spendless-b31c3",
+    "storage_bucket": "spendless-b31c3.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:130552286901:android:fef901fe3105a92e2438fc",
+        "android_client_info": {
+          "package_name": "com.spendless"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDch2BjubmDXYZ_M34j1t1J9nSdv_IR2bc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:130552286901:android:d9e9a29d11af319a2438fc",
+        "android_client_info": {
+          "package_name": "com.spendsmart"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDch2BjubmDXYZ_M34j1t1J9nSdv_IR2bc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
