@@ -10,7 +10,7 @@ import {
   Modal,
 } from 'react-native';
 
-const AddTransactionScreen = () => {
+const AddExpenseScreen = () => {
   const [transactionData, setTransactionData] = useState({
     type: 'expense', // 'income', 'expense', 'transfer'
     amount: '',
@@ -557,4 +557,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default AddTransactionScreen;
+export default AddExpenseScreen;

@@ -1,4 +1,3 @@
-/* eslint-disable react-native/no-inline-styles */
 import React, { useState } from 'react';
 import {
   View,
@@ -9,8 +8,7 @@ import {
   ScrollView,
   Alert,
 } from 'react-native';
-import { authService } from '../services/AuthService';
-import Icon from 'react-native-vector-icons/Ionicons';
+import { authService } from '../../services/AuthService'
 
 const AuthScreen = ({ navigation }) => {
   const [isLogin, setIsLogin] = useState(true);
@@ -37,7 +35,7 @@ const AuthScreen = ({ navigation }) => {
     if (errors[field]) {
       setErrors(prev => ({
         ...prev,
-        [field]: null,
+        [field]: null
       }));
     }
   };
@@ -59,7 +57,7 @@ const AuthScreen = ({ navigation }) => {
 
     // Validation email
     if (!formData.email) {
-      newErrors.email = "L'email est requis";
+      newErrors.email = 'L\'email est requis';
     } else if (!validateEmail(formData.email)) {
       newErrors.email = 'Adresse email invalide';
     }
@@ -68,8 +66,7 @@ const AuthScreen = ({ navigation }) => {
     if (!formData.password) {
       newErrors.password = 'Le mot de passe est requis';
     } else if (formData.password.length < 6) {
-      newErrors.password =
-        'Le mot de passe doit contenir au moins 6 caractères';
+      newErrors.password = 'Le mot de passe doit contenir au moins 6 caractères';
     }
 
     // Validations spécifiques à l'inscription
@@ -89,8 +86,7 @@ const AuthScreen = ({ navigation }) => {
       }
 
       if (!formData.confirmPassword) {
-        newErrors.confirmPassword =
-          'La confirmation du mot de passe est requise';
+        newErrors.confirmPassword = 'La confirmation du mot de passe est requise';
       } else if (formData.password !== formData.confirmPassword) {
         newErrors.confirmPassword = 'Les mots de passe ne correspondent pas';
       }
@@ -108,20 +104,14 @@ const AuthScreen = ({ navigation }) => {
     try {
       if (isLogin) {
         // Connexion
-        const result = await authService.login(
-          formData.email,
-          formData.password,
-        );
-
+        const result = await authService.login(formData.email, formData.password);
+        
         if (result.success) {
           Alert.alert('Succès', 'Connexion réussie !', [
             { text: 'OK', onPress: () => navigation.navigate('Dashboard') },
           ]);
         } else {
-          Alert.alert(
-            'Erreur de connexion',
-            result.errors?.join('\n') || 'Identifiants incorrects',
-          );
+          Alert.alert('Erreur de connexion', result.errors?.join('\n') || 'Identifiants incorrects');
         }
       } else {
         // Inscription
@@ -130,19 +120,18 @@ const AuthScreen = ({ navigation }) => {
           prenom: formData.firstName.trim(),
           telephone: formData.phone.replace(/\s/g, ''),
           email: formData.email.toLowerCase().trim(),
-          motDePasse: formData.password,
+          motDePasse: formData.password
         };
 
         const result = await authService.register(userData);
-
+        
         if (result.success) {
           Alert.alert(
-            'Inscription réussie !',
-            result.message ||
-              'Votre compte a été créé avec succès. Veuillez vérifier votre email.',
+            'Inscription réussie !', 
+            result.message || 'Votre compte a été créé avec succès. Veuillez vérifier votre email.',
             [
-              {
-                text: 'OK',
+              { 
+                text: 'OK', 
                 onPress: () => {
                   setIsLogin(true);
                   // Réinitialiser le formulaire
@@ -154,23 +143,17 @@ const AuthScreen = ({ navigation }) => {
                     lastName: '',
                     phone: '',
                   });
-                },
-              },
-            ],
+                }
+              }
+            ]
           );
         } else {
-          Alert.alert(
-            "Erreur d'inscription",
-            result.errors?.join('\n') || 'Une erreur est survenue',
-          );
+          Alert.alert('Erreur d\'inscription', result.errors?.join('\n') || 'Une erreur est survenue');
         }
       }
     } catch (error) {
       console.error('Erreur authentification:', error);
-      Alert.alert(
-        'Erreur',
-        'Une erreur inattendue est survenue. Veuillez réessayer.',
-      );
+      Alert.alert('Erreur', 'Une erreur inattendue est survenue. Veuillez réessayer.');
     } finally {
       setIsLoading(false);
     }
@@ -178,10 +161,7 @@ const AuthScreen = ({ navigation }) => {
 
   const handleForgotPassword = async () => {
     if (!formData.email) {
-      Alert.alert(
-        'Email requis',
-        "Veuillez entrer votre adresse email d'abord",
-      );
+      Alert.alert('Email requis', 'Veuillez entrer votre adresse email d\'abord');
       return;
     }
 
@@ -193,23 +173,17 @@ const AuthScreen = ({ navigation }) => {
     try {
       setIsLoading(true);
       const result = await authService.resetPassword(formData.email);
-
+      
       if (result.success) {
         Alert.alert(
           'Email envoyé',
-          'Un lien de réinitialisation a été envoyé à votre adresse email',
+          'Un lien de réinitialisation a été envoyé à votre adresse email'
         );
       } else {
-        Alert.alert(
-          'Erreur',
-          result.error || "Impossible d'envoyer l'email de réinitialisation",
-        );
+        Alert.alert('Erreur', result.error || 'Impossible d\'envoyer l\'email de réinitialisation');
       }
     } catch (error) {
-      Alert.alert(
-        'Erreur',
-        "Une erreur est survenue lors de l'envoi de l'email",
-      );
+      Alert.alert('Erreur', 'Une erreur est survenue lors de l\'envoi de l\'email');
     } finally {
       setIsLoading(false);
     }
@@ -228,14 +202,14 @@ const AuthScreen = ({ navigation }) => {
     setErrors({});
   };
 
-  const getInputStyle = fieldName => [
+  const getInputStyle = (fieldName) => [
     styles.input,
-    errors[fieldName] && styles.inputError,
+    errors[fieldName] && styles.inputError
   ];
 
-  const getPasswordInputStyle = fieldName => [
+  const getPasswordInputStyle = (fieldName) => [
     styles.passwordInput,
-    errors[fieldName] && styles.inputError,
+    errors[fieldName] && styles.inputError
   ];
 
   return (
@@ -245,29 +219,7 @@ const AuthScreen = ({ navigation }) => {
     >
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.logo}>
-          <Text
-            style={{
-              fontSize: 32,
-              fontWeight: 'bold',
-              color: '#D311D0',
-              marginBottom: 8,
-            }}
-          >
-            S
-          </Text>
-          pend
-          <Text
-            style={{
-              fontSize: 32,
-              fontWeight: 'bold',
-              color: '#D311D0',
-              marginBottom: 8,
-            }}
-          >S
-          </Text>
-            mart
-        </Text>
+        <Text style={styles.logo}>💰 SpendLess</Text>
         <Text style={styles.subtitle}>
           {isLogin ? 'Bon retour parmi nous !' : 'Créez votre compte'}
         </Text>
@@ -313,9 +265,7 @@ const AuthScreen = ({ navigation }) => {
                   placeholderTextColor="#999"
                   autoCapitalize="words"
                 />
-                {errors.firstName && (
-                  <Text style={styles.errorText}>{errors.firstName}</Text>
-                )}
+                {errors.firstName && <Text style={styles.errorText}>{errors.firstName}</Text>}
               </View>
               <View style={styles.nameField}>
                 <Text style={styles.label}>Nom *</Text>
@@ -327,9 +277,7 @@ const AuthScreen = ({ navigation }) => {
                   placeholderTextColor="#999"
                   autoCapitalize="words"
                 />
-                {errors.lastName && (
-                  <Text style={styles.errorText}>{errors.lastName}</Text>
-                )}
+                {errors.lastName && <Text style={styles.errorText}>{errors.lastName}</Text>}
               </View>
             </View>
 
@@ -343,9 +291,7 @@ const AuthScreen = ({ navigation }) => {
                 placeholderTextColor="#999"
                 keyboardType="phone-pad"
               />
-              {errors.phone && (
-                <Text style={styles.errorText}>{errors.phone}</Text>
-              )}
+              {errors.phone && <Text style={styles.errorText}>{errors.phone}</Text>}
             </View>
           </>
         )}
@@ -381,15 +327,10 @@ const AuthScreen = ({ navigation }) => {
               style={styles.eyeButton}
               onPress={() => setShowPassword(!showPassword)}
             >
-              {showPassword ? 
-              <Icon name="eye" size={22} color={"#000"} /> :
-              <Icon name="eye-off" size={22} color={"#000"} />
-            }
+              <Text style={styles.eyeIcon}>{showPassword ? '👁️' : '👁️‍🗨️'}</Text>
             </TouchableOpacity>
           </View>
-          {errors.password && (
-            <Text style={styles.errorText}>{errors.password}</Text>
-          )}
+          {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
         </View>
 
         {/* Confirm Password Field */}
@@ -416,9 +357,7 @@ const AuthScreen = ({ navigation }) => {
                 </Text>
               </TouchableOpacity>
             </View>
-            {errors.confirmPassword && (
-              <Text style={styles.errorText}>{errors.confirmPassword}</Text>
-            )}
+            {errors.confirmPassword && <Text style={styles.errorText}>{errors.confirmPassword}</Text>}
           </View>
         )}
 
@@ -479,7 +418,7 @@ const AuthScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#5F33FD',
+    backgroundColor: '#f8f9fa',
   },
   keyboardView: {
     flex: 1,
@@ -488,7 +427,6 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     justifyContent: 'center',
     padding: 20,
-    backgroundColor: '#5F33FD',
   },
   header: {
     alignItems: 'center',
@@ -497,12 +435,12 @@ const styles = StyleSheet.create({
   logo: {
     fontSize: 32,
     fontWeight: 'bold',
-    color: '#fff',
+    color: '#5F33FD',
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 16,
-    color: '#fff',
+    color: '#666',
     textAlign: 'center',
   },
   formContainer: {
@@ -532,7 +470,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   activeToggle: {
-    backgroundColor: '#D311D0',
+    backgroundColor: '#5F33FD',
   },
   toggleText: {
     fontSize: 16,

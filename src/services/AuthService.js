@@ -1,203 +1,103 @@
+// Importation
 import auth from '@react-native-firebase/auth';
-import firestore from '@react-native-firebase/firestore';
-import { User } from '../models/User';
 
-export class AuthService {
-  
-  // Créer un nouvel utilisateur
-  async register(userData) {
+// Services
+import { accountService } from './AccountService';
+import { userService } from './UserService';
+
+// Modèles
+import User from '../models/User';
+import Account from '../models/Account';
+
+class AuthService {
+  //Enregistre un nouvel utilisateur avec e-mail et mot de passe.
+  async signUp(email, password) {
     try {
-      // Créer une instance du modèle User
-      const user = new User(userData);
-      
-      // Valider les données
-      const validation = user.validate();
-      if (!validation.isValid) {
-        return {
-          success: false,
-          errors: validation.errors
-        };
-      }
-
-      // Vérifier si l'email existe déjà
-      const emailExists = await this.checkEmailExists(user.email);
-      if (emailExists) {
-        return {
-          success: false,
-          errors: ['Cette adresse email est déjà utilisée']
-        };
-      }
-
-      // Vérifier si le téléphone existe déjà
-      const phoneExists = await this.checkPhoneExists(user.telephone);
-      if (phoneExists) {
-        return {
-          success: false,
-          errors: ['Ce numéro de téléphone est déjà utilisé']
-        };
-      }
-
-      // Créer le compte Firebase Auth
-      const userCredential = await auth().createUserWithEmailAndPassword(
-        user.email,
-        user.motDePasse
-      );
-
+      const userCredential = await auth().createUserWithEmailAndPassword(email, password);
       const firebaseUser = userCredential.user;
 
-      // Mettre à jour le profil Firebase
-      await firebaseUser.updateProfile({
-        displayName: user.nomComplet
+      // Crée un nouveau document utilisateur dans Firestore
+      const newUser = new User(
+        firebaseUser.uid,
+        firebaseUser.email,
+        firebaseUser.displayName || '',
+        firebaseUser.photoURL || ''
+      );
+      await userService.createUser(newUser);
+
+      // Crée un compte par défaut pour le nouvel utilisateur
+      const defaultAccount = new Account(
+        firebaseUser.uid,
+        'Cash',               // Nom du compte par défaut
+        'cash',               // Type de compte
+        0,                    // Solde initial
+        '',
+        new Date(),
+        new Date(),
+        0,
+        true                  // Est le compte par défaut
+      );
+      await accountService.addAccount(firebaseUser.uid, defaultAccount);
+      console.log('Default account created for new user:', firebaseUser.uid);
+
+      console.log('User signed up and Firestore document created:', firebaseUser.uid);
+      return firebaseUser;
+    } catch (error) {
+      console.error("Error signing up:", error);
+      throw error;
+    }
+  }
+
+  // Connecte un utilisateur existant avec e-mail et mot de passe.
+  async signIn(email, password) {
+    try {
+      const userCredential = await auth().signInWithEmailAndPassword(email, password);
+      const firebaseUser = userCredential.user;
+
+      // Met à jour la date de dernière connexion dans Firestore
+      await userService.updateUserInfo(firebaseUser.uid, {
+        lastLoginAt: new Date(), // Date actuelle
       });
 
-      // Sauvegarder les informations supplémentaires dans Firestore
-      const userDoc = {
-        id: firebaseUser.uid,
-        nom: user.nom,
-        prenom: user.prenom,
-        telephone: user.telephone,
-        email: user.email,
-        image: user.image,
-        dateCreation: firestore.FieldValue.serverTimestamp(),
-        dateModification: firestore.FieldValue.serverTimestamp()
-      };
-
-      await firestore()
-        .collection('users')
-        .doc(firebaseUser.uid)
-        .set(userDoc);
-
-      // Envoyer email de vérification
-      await firebaseUser.sendEmailVerification();
-
-      // Retourner l'utilisateur créé (sans le mot de passe)
-      const createdUser = User.fromJSON({
-        ...userDoc,
-        id: firebaseUser.uid,
-        dateCreation: new Date(),
-        dateModification: new Date()
-      });
-
-      return {
-        success: true,
-        user: createdUser,
-        message: 'Compte créé avec succès. Veuillez vérifier votre email.'
-      };
-
+      console.log('User signed in and last login updated:', firebaseUser.uid);
+      return firebaseUser;
     } catch (error) {
-      console.error('Erreur lors de l\'inscription:', error);
-      
-      // Gérer les erreurs spécifiques de Firebase
-      let errorMessage = 'Une erreur est survenue lors de l\'inscription';
-      
-      switch (error.code) {
-        case 'auth/email-already-in-use':
-          errorMessage = 'Cette adresse email est déjà utilisée';
-          break;
-        case 'auth/invalid-email':
-          errorMessage = 'L\'adresse email n\'est pas valide';
-          break;
-        case 'auth/weak-password':
-          errorMessage = 'Le mot de passe est trop faible';
-          break;
-        case 'auth/network-request-failed':
-          errorMessage = 'Problème de connexion réseau';
-          break;
-      }
-
-      return {
-        success: false,
-        errors: [errorMessage]
-      };
+      console.error("Error signing in:", error);
+      throw error;
     }
   }
 
-  // Vérifier si une adresse email est déjà utiliséé
-  async checkEmailExists(email) {
+  // Déconnecte l'utilisateur actuel.
+  async signOut() {
     try {
-      const snapshot = await firestore()
-        .collection('users')
-        .where('email', '==', email.toLowerCase())
-        .get();
-      
-      return !snapshot.empty;
+      await auth().signOut();
+      console.log('User signed out successfully.');
     } catch (error) {
-      console.error('Erreur vérification email:', error);
-      return false;
+      console.error("Error signing out:", error);
+      throw error;
     }
   }
 
-  // Vérifier si un numéro de téléphone est déjà utilisée
-  async checkPhoneExists(telephone) {
+  // Réinitialise le mot de passe de l'utilisateur via son e-mail.
+  async resetPassword(email) {
     try {
-      const snapshot = await firestore()
-        .collection('users')
-        .where('telephone', '==', telephone.replace(/\s/g, ''))
-        .get();
-      
-      return !snapshot.empty;
+      await auth().sendPasswordResetEmail(email);
+      console.log('Password reset email sent to:', email);
     } catch (error) {
-      console.error('Erreur vérification téléphone:', error);
-      return false;
+      console.error("Error sending password reset email:", error);
+      throw error;
     }
   }
 
-  // Récupère les informations du compte d'un utilisateur.
-  async getUserData(userId) {
-    try {
-      const userDoc = await firestore()
-        .collection('users')
-        .doc(userId)
-        .get();
-
-      if (userDoc.exists) {
-        return User.fromJSON({
-          ...userDoc.data(),
-          id: userDoc.id
-        });
-      }
-      
-      return null;
-    } catch (error) {
-      console.error('Erreur récupération utilisateur:', error);
-      return null;
-    }
+  // Observer l'état d'authentification de l'utilisateur.
+  onAuthStateChanged(callback) {
+    return auth().onAuthStateChanged(callback);
   }
 
-  // Mettre à jour les informations d'un utilisateur
-  async updateUser(userId, updateData) {
-    try {
-      const user = new User(updateData);
-      const validation = user.validate();
-      
-      if (!validation.isValid) {
-        return {
-          success: false,
-          errors: validation.errors
-        };
-      }
-
-      await firestore()
-        .collection('users')
-        .doc(userId)
-        .update({
-          ...user.sanitize(),
-          dateModification: firestore.FieldValue.serverTimestamp()
-        });
-
-      return {
-        success: true,
-        message: 'Profil mis à jour avec succès'
-      };
-    } catch (error) {
-      console.error('Erreur mise à jour utilisateur:', error);
-      return {
-        success: false,
-        errors: ['Erreur lors de la mise à jour du profil']
-      };
-    }
+  // Récupère l'utilisateur actuellement connecté.
+  getCurrentUser() {
+    return auth().currentUser;
   }
 }
 
-// Instance singleton du service
 export const authService = new AuthService();
