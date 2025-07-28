@@ -11,18 +11,19 @@ import Account from '../models/Account';
 
 class AuthService {
   //Enregistre un nouvel utilisateur avec e-mail et mot de passe.
-  async signUp(email, password) {
+  async signUp(userData) {
     try {
-      const userCredential = await auth().createUserWithEmailAndPassword(email, password);
+      const userCredential = await auth().createUserWithEmailAndPassword(userData.email, userData.password);
       const firebaseUser = userCredential.user;
 
       // Crée un nouveau document utilisateur dans Firestore
       const newUser = new User(
         firebaseUser.uid,
         firebaseUser.email,
-        firebaseUser.displayName || '',
+        userData.username || '',
         firebaseUser.photoURL || ''
       );
+      
       await userService.createUser(newUser);
 
       // Crée un compte par défaut pour le nouvel utilisateur

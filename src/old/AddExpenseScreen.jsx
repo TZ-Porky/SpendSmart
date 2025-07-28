@@ -14,7 +14,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
-import DateTimePicker from '@react-native-community/datetimepicker'; // npm install @react-native-community/datetimepicker
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { transactionService } from '../services/TransactionService';
 import { accountService } from '../services/AccountService';
 import { categoryService } from '../services/CategoryService';

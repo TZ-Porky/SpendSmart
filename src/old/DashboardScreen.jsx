@@ -38,10 +38,10 @@ const categoryIcons = {}; // Vous pouvez populer ceci si vous avez des icônes s
 
 function DashboardScreen({ userUid, onNavigateToAddTransaction, onNavigateToAccounts, onNavigateToBudgets, onNavigateToProfile, onNavigateToInsight }) {
   const [userDisplayName, setUserDisplayName] = useState('Chargement...');
-  const [balanceSummary, setBalanceSummary] = useState(new BalanceSummary(userUid)); // Valeur par défaut
+  const [balanceSummary, setBalanceSummary] = useState(new BalanceSummary(userUid));
   const [transactions, setTransactions] = useState([]);
   const [budgets, setBudgets] = useState([]);
-  const [categories, setCategories] = useState([]); // Pour mapper les IDs de catégorie aux noms/icônes
+  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [userProfile, setUserProfile] = useState();
 
@@ -68,7 +68,6 @@ function DashboardScreen({ userUid, onNavigateToAddTransaction, onNavigateToAcco
       setLoading(false);
     });
 
-    // Optionnel: Récupérer le nom de l'utilisateur pour l'affichage
     const fetchUserName = async () => {
       const userDoc = await firestore().collection('users').doc(userUid).get();
       if (userDoc.exists && userDoc.data().displayName) {
@@ -94,7 +93,6 @@ function DashboardScreen({ userUid, onNavigateToAddTransaction, onNavigateToAcco
       }
     };
     fetchUserProfile();
-
 
     return () => {
       unsubscribeBalance();
